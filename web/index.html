@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>Simple EPUB Generator</title>
+  <meta charset="utf-8"/>
+  <style>
+  .vertical-box-wrap {
+    display: flex;
+    flex-flow: column wrap;
+  }
+  .horizon-left-box-wrap {
+    display : flex;
+    flex-flow : row wrap;
+    margin : 4px;
+  }
+  .horizon-right-box-wrap {
+    display : flex;
+    flex-flow : row-reverse wrap;
+    margin : 4px;
+  }
+  label {
+    width : 180px;
+    text-align : right;
+  }
+  .label-left {
+    width : 180px;
+    text-align : left;
+  }
+  textarea {
+    width : 600px;
+    height : 100px;
+  }
+  </style>
+  </head>
+  <form id="requestForm">
+    <div class="vertical-box-wrap">
+      <div class="horizon-left-box-wrap">
+        <label for="book_id">書籍ID</label>
+        <input name="book_id" id="book_id" type="text">
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label for="publisher">出版社</label>
+        <input name="publisher" id="publisher" type="text">
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label for="creator">著者</label>
+        <input name="creator" id="creator" type="text">
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label for="title">書籍タイトル</label>
+        <input name="title" id="title" type="text">
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label for="language">言語</label>
+        <select name="language" id="language"><option value="ja">日本語</option><option value="en">English</option></select>
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label class="label-left" for="tocContent">目次（ナビゲーション）</label>
+      </div>
+      <div class="horizon-left-box-wrap">
+        <textarea name="tocContent" id="tocContent"></textarea>
+      </div>
+      <div class="horizon-left-box-wrap">
+        <label class="label-left" for="bookContent">本文</label>
+      </div>
+      <div class="horizon-left-box-wrap">
+        <textarea name="bookContent" id="bookContent"></textarea>
+      </div>
+      <div class="horizon-left-box-wrap">
+        <input type="submit">
+      </div>
+    </div>
+  </form>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/4.2.2/jquery.form.min.js"></script>
+  <script>
+    function toJSONString( form ) {
+ 	  var obj = {};
+      var elements = form.querySelectorAll( "input, select, textarea" );
+	  for( var i = 0; i < elements.length; ++i ) {
+	    var element = elements[i];
+		var name = element.name;
+		var value = element.value;
+
+	    if( name ) {
+          obj[ name ] = value;
+	    }
+	  }
+	  return JSON.stringify(obj);
+	}
+
+    $(document).ready(function () {
+      $('#requestForm').on('submit', function(e) {
+        e.preventDefault(); // prevent native submit
+        $.ajax({
+          type : 'post',
+          contentType : 'application/json',
+          url: 'http://localhost:8080/generate',
+          data: toJSONString(this),
+          xhrFields: {
+            responseType: 'blob'
+          },
+          success: function (data) {
+            var a = document.createElement('a');
+            var url = window.URL.createObjectURL(data);
+            a.href = url;
+            a.download = 'generated.epub';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+        });
+      })
+    });
+  </script>
+  </body>
+ </html>
